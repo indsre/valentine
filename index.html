@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Valentine’s</title>
+
+<style>
+:root{
+--bg1:#06060a;
+--bg2:#0a0a12;
+--text:#ffffff;
+--muted:rgba(255,255,255,0.78);
+--btn:rgba(255,255,255,0.14);
+--btnHover:rgba(255,255,255,0.22);
+--accent1:#ff4d6d;
+--accent2:#ff8fa3;
+--shadow:rgba(0,0,0,0.55);
+}
+
+*{ box-sizing:border-box; }
+
+html,body{
+height:100%;
+margin:0;
+background: radial-gradient(1200px 700px at 15% 10%, rgba(255,77,109,0.14), transparent 55%),
+radial-gradient(900px 520px at 85% 30%, rgba(255,143,163,0.10), transparent 60%),
+radial-gradient(700px 500px at 50% 92%, rgba(255,255,255,0.06), transparent 60%),
+linear-gradient(180deg, var(--bg1), var(--bg2));
+color:var(--text);
+font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+overflow:hidden;
+}
+
+/* subtle sparkles */
+.sparkles{
+position:fixed; inset:0;
+pointer-events:none;
+opacity:0.18;
+background-image:
+radial-gradient(circle at 18% 22%, rgba(255,255,255,0.08) 0 1px, transparent 2px),
+radial-gradient(circle at 72% 18%, rgba(255,255,255,0.06) 0 1px, transparent 2px),
+radial-gradient(circle at 44% 78%, rgba(255,255,255,0.05) 0 1px, transparent 2px),
+radial-gradient(circle at 82% 70%, rgba(255,255,255,0.05) 0 1px, transparent 2px);
+filter: blur(0.2px);
+}
+
+/* FULL SCREEN "cinema" */
+.screen{
+position:fixed;
+inset:0;
+overflow:hidden;
+}
+
+/* letterbox bars */
+.letterbox{
+position:absolute; inset:0;
+pointer-events:none;
+z-index:5;
+}
+.bar{
+position:absolute; left:0; right:0;
+height:0%; /* start open */
+background: rgba(0,0,0,0.94);
+transition: height 1100ms cubic-bezier(.2,.9,.2,1);
+}
+.bar.top{ top:0; }
+.bar.bottom{ bottom:0; }
+
+/* bars slide IN (tightens) */
+.screen.tight .bar{ height:40%; }
+
+/* bars slide OUT (opens slightly cinematic) */
+.screen.open .bar{ height:10%; }
+
+/* title cards overlay */
+.titlecard{
+position:absolute; inset:0;
+z-index:6;
+display:flex;
+align-items:center;
+justify-content:center;
+padding:28px;
+text-align:center;
+opacity:0;
+transform: translateY(10px);
+transition: opacity 700ms ease, transform 700ms ease;
+pointer-events:none;
+}
+.titlecard.show{
+opacity:1;
+transform: translateY(0);
+}
+.cardText{
+font-weight:950;
+letter-spacing:2.2px;
+text-transform:uppercase;
+color: rgba(255,255,255,0.90);
+font-size: clamp(18px, 3.2vw, 44px);
+line-height:1.25;
+text-shadow: 0 10px 40px rgba(0,0,0,0.65);
+}
+
+/* app content */
+.wrap{
+position:absolute;
+inset:0;
+z-index:2;
+display:flex;
+align-items:center;
+justify-content:center;
+padding:26px;
+text-align:center;
+opacity:0;
+transform: translateY(8px);
+transition: opacity 700ms ease, transform 700ms ease;
+}
+.wrap.visible{
+opacity:1;
+transform: translateY(0);
+}
+
+.card{
+width:min(820px, 92vw);
+padding:28px 20px 22px;
+border-radius:22px;
+background: rgba(0,0,0,0.35);
+border: 1px solid rgba(255,255,255,0.14);
+box-shadow: 0 18px 60px var(--shadow);
+backdrop-filter: blur(8px);
+}
+
+.icons{
+font-size:62px;
+letter-spacing:10px;
+opacity:0.95;
+margin-bottom:16px;
+user-select:none;
+}
+
+.title{
+font-weight:950;
+text-transform:uppercase;
+letter-spacing:2px;
+margin:0 0 10px;
+font-size: clamp(30px, 5.2vw, 58px);
+line-height:1.05;
+}
+
+.subtitle{
+margin:0 0 18px;
+color:var(--muted);
+font-size: clamp(14px, 2.2vw, 18px);
+line-height:1.5;
+}
+
+.stage{
+margin-top:14px;
+display:flex;
+flex-direction:column;
+align-items:center;
+gap:14px;
+}
+
+.q{
+font-size: clamp(18px, 2.8vw, 26px);
+font-weight:850;
+margin:6px 0;
+letter-spacing:0.2px;
+}
+
+.btns{
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
+gap:12px;
+position:relative;
+}
+
+button{
+border:0;
+cursor:pointer;
+padding:12px 14px;
+border-radius:14px;
+background: var(--btn);
+color: var(--text);
+font-weight:750;
+font-size:16px;
+transition: transform .08s ease, background .25s ease, filter .2s ease;
+backdrop-filter: blur(6px);
+-webkit-tap-highlight-color: transparent;
+}
+button:hover{ background: var(--btnHover); }
+button:active{ transform: scale(0.98); }
+
+.primary{
+background: linear-gradient(135deg, var(--accent1), var(--accent2));
+color:#14060a;
+font-weight:900;
+}
+.primary:hover{ filter: brightness(1.05); }
+
+#noBtn{
+position:relative;
+opacity:0.88;
+font-size:14px;
+}
+
+.gif{
+width:min(560px,92vw);
+margin:16px auto 0;
+border-radius:18px;
+overflow:hidden;
+border:1px solid rgba(255,255,255,0.14);
+background: rgba(0,0,0,0.35);
+box-shadow: 0 18px 60px rgba(0,0,0,0.55);
+}
+.gif img{ width:100%; display:block; }
+</style>
+</head>
+
+<body>
+<div class="sparkles"></div>
+
+<div class="screen" id="screen">
+<div class="letterbox">
+<div class="bar top"></div>
+<div class="bar bottom"></div>
+</div>
+
+<div class="titlecard" id="titlecard">
+<div class="cardText" id="cardText"></div>
+</div>
+
+<main class="wrap" id="app"></main>
+</div>
+
+<script>
+const screen = document.getElementById('screen');
+const app = document.getElementById('app');
+const titlecard = document.getElementById('titlecard');
+const cardText = document.getElementById('cardText');
+
+const ROMCOM_GIF_URL = "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExdTN6ejdsY2I5dnNtejJibDFjNGxjenIycnFoYzR3aGJ4MXhuZGJtciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/QeAqQ2k1shJwoBNggF/giphy.gif";
+
+const cards = [
+"PRIVATE SCREENING INVITE",
+"INDIE SREERAM PICTURES PRESENTS",
+"JAY NAGJEE",
+"IN AN INDIE SREERAM PRODUCTION",
+"OF AN INDIE SREERAM FILM",
+"VALENTINE’S"
+];
+
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+// 3 seconds each (includes fade-in/out time)
+const FADE_IN_MS = 700;
+const HOLD_MS = 1600; // visible time
+const FADE_OUT_MS = 700;
+
+async function showCard(text){
+cardText.textContent = text;
+titlecard.classList.add('show');
+await sleep(FADE_IN_MS);
+await sleep(HOLD_MS);
+titlecard.classList.remove('show');
+await sleep(FADE_OUT_MS);
+}
+
+function hero(){
+app.innerHTML = `
+<div class="card">
+<div class="icons">🍿 💘</div>
+<h1 class="title">Valentine’s</h1>
+<p class="subtitle">
+You have been invited to a private screening.<br/>
+Click start when you’re ready.
+</p>
+<div class="stage">
+<button class="primary" onclick="finalQ()">Start</button>
+</div>
+</div>
+`;
+}
+
+function finalQ(){
+app.innerHTML = `
+<div class="card">
+<div class="icons">🎬 💖</div>
+<h1 class="title">Final Question</h1>
+
+<div class="stage">
+<div class="q">Jay baba, will you be my Valentine?</div>
+
+<div class="btns" id="finalBtns">
+<button class="primary" onclick="yes()">Yes, I would love to</button>
+<button id="noBtn">no</button>
+</div>
+</div>
+</div>
+`;
+
+const noBtn = document.getElementById('noBtn');
+const dodge = () => {
+const maxX = 180, maxY = 70;
+const x = (Math.random() * (maxX * 2)) - maxX;
+const y = (Math.random() * (maxY * 2)) - maxY;
+noBtn.style.transform = `translate(${x}px, ${y}px)`;
+};
+noBtn.addEventListener('mouseenter', dodge);
+noBtn.addEventListener('mouseover', dodge);
+noBtn.addEventListener('touchstart', (e) => { e.preventDefault(); dodge(); }, {passive:false});
+noBtn.addEventListener('click', (e) => { e.preventDefault(); dodge(); });
+}
+
+function yes(){
+const gifBlock = (ROMCOM_GIF_URL && !ROMCOM_GIF_URL.includes("PASTE_"))
+? `<div class="gif"><img src="${ROMCOM_GIF_URL}" alt="romcom gif"></div>`
+: "";
+
+app.innerHTML = `
+<div class="card">
+<div class="icons">✅ 💘</div>
+<h1 class="title">BOOKING CONFIRMED</h1>
+<p class="subtitle" style="font-weight:900; letter-spacing:2px; text-transform:uppercase;">
+You are officially my <span style="color:var(--accent2)">VALENTINE</span> 💖
+</p>
+${gifBlock}
+<p class="subtitle" style="margin-top:14px; color:rgba(255,255,255,0.90); font-size:18px;">
+Jay, I love you baby. You are my best friend and my love and there is nobody I’d want to do life with but you.
+</p>
+</div>
+`;
+}
+
+async function runIntro(){
+// start with bars open so you SEE them move
+screen.classList.remove('tight', 'open');
+
+// bars slide IN
+await sleep(250);
+screen.classList.add('tight');
+await sleep(1250);
+
+// title cards (3 seconds each total-ish)
+for (let i = 0; i < cards.length; i++){
+await showCard(cards[i]);
+}
+
+// bars slide OUT
+screen.classList.remove('tight');
+screen.classList.add('open');
+
+// show hero after bars start opening
+await sleep(800);
+hero();
+app.classList.add('visible');
+}
+
+runIntro();
+</script>
+</body>
+</html>
