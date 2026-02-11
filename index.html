@@ -227,32 +227,6 @@ rgba(0,0,0,0) 6px
 );
 mix-blend-mode: screen;
 }
-
-@keyframes glitchJitter{
-0%, 100% { transform: translate(0,0); filter:none; }
-12% { transform: translate(0.6px, -0.4px); }
-24% { transform: translate(-0.7px, 0.4px); }
-42% { transform: translate(0.4px, 0.2px); }
-58% { transform: translate(-0.4px, -0.2px); }
-76% { transform: translate(0.7px, 0); }
-}
-
-@keyframes glitchSlice{
-0% { clip-path: inset(0 0 60% 0); }
-20% { clip-path: inset(10% 0 45% 0); }
-40% { clip-path: inset(2% 0 70% 0); }
-60% { clip-path: inset(30% 0 35% 0); }
-80% { clip-path: inset(5% 0 55% 0); }
-100% { clip-path: inset(0 0 60% 0); }
-}
-
-@keyframes glitchSlice2{
-0% { clip-path: inset(45% 0 0 0); }
-25% { clip-path: inset(55% 0 0 0); }
-50% { clip-path: inset(38% 0 0 0); }
-75% { clip-path: inset(62% 0 0 0); }
-100% { clip-path: inset(45% 0 0 0); }
-}
 </style>
 </head>
 
@@ -298,7 +272,6 @@ const FADE_OUT_MS = 700;
 
 async function showCard(text){
 cardText.textContent = text;
-cardtext.setAttribute("data-text",text); //needed for the glitch layers
 titlecard.classList.add('show');
 await sleep(FADE_IN_MS);
 await sleep(HOLD_MS);
