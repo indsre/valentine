@@ -309,7 +309,6 @@ letter-spacing:2px;
 text-transform:uppercase;
 opacity:0.9;
 }
-
 </style>
 </head>
 
@@ -339,6 +338,48 @@ const ROMCOM_GIF_URL = "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExdTN6ej
 
 /* ✅ paste your image URL for the puzzle here */
 const PUZZLE_IMG_URL = "https://uploads8.wikiart.org/images/vincent-van-gogh/a-pair-of-lovers-arles-1888(1).jpg";
+
+/* =========================
+✅ INTRO (this was missing)
+========================= */
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+const cards = [
+"INDIE SREERAM PICTURES PRESENTS",
+"JAY NAGJEE",
+"IN AN INDIE SREERAM PRODUCTION",
+"OF AN INDIE SREERAM FILM",
+"A VALENTINE’S DAY"
+];
+
+const FADE_IN_MS = 700;
+const HOLD_MS = 1600;
+const FADE_OUT_MS = 700;
+
+async function showCard(text){
+cardText.textContent = text;
+titlecard.classList.add('show');
+await sleep(FADE_IN_MS);
+await sleep(HOLD_MS);
+titlecard.classList.remove('show');
+await sleep(FADE_OUT_MS);
+}
+
+function hero(){
+app.innerHTML = `
+<div class="card">
+<div class="icons">🍿 💘</div>
+<h1 class="title">A Valentine’s Day</h1>
+<p class="subtitle">
+You have been invited to a private screening.<br/>
+</p>
+<div class="stage">
+<button class="primary" onclick="q1()">RSVP</button>
+</div>
+</div>
+`;
+}
+
 /* =========================
 ✅ PUZZLE
 ========================= */
@@ -402,7 +443,6 @@ function bgForPiece(pieceIndex){
 const x = pieceIndex % 3;
 const y = Math.floor(pieceIndex / 3);
 
-// fallback if user hasn't pasted image yet
 const hasImg = PUZZLE_IMG_URL && !PUZZLE_IMG_URL.includes("PASTE_");
 
 if(!hasImg){
@@ -431,26 +471,20 @@ tile.style.cssText = bgForPiece(piece);
 tile.addEventListener('click', () => {
 if(startShowtimeBtn && !startShowtimeBtn.classList.contains('hidden')) return;
 
-// first click selects
 if(selected === null){
 selected = pos;
 renderTiles();
 return;
 }
-
-// clicking same tile cancels
 if(selected === pos){
 selected = null;
 renderTiles();
 return;
 }
-
-// if already used swaps up, ignore
 if(swapsUsed >= MAX_SWAPS){
 return;
 }
 
-// swap two selected tiles
 const a = selected;
 const b = pos;
 
@@ -484,8 +518,6 @@ renderTiles();
 grid.appendChild(tile);
 }
 }
-
-// init
 swapsUsed = 0;
 swapStatus.textContent = `Swaps left: ${MAX_SWAPS}`;
 renderTiles();
@@ -525,16 +557,13 @@ const tick = () => {
 el.textContent = n;
 n--;
 if(n === 0){
-setTimeout(() => {
-finalQ();
-}, 650);
+setTimeout(() => { finalQ(); }, 650);
 return;
 }
 setTimeout(tick, 1000);
 };
 
 tick();
-
 }
 
 // ✅ Final valentine question (with dodging "no")
@@ -586,25 +615,23 @@ Jay, I love you baby. You are my best friend and the most amazing human I know a
 `;
 }
 
+/* =========================
+✅ INTRO RUN
+========================= */
 async function runIntro(){
-// start open so animation is visible
 screen.classList.remove('tight', 'open');
 
-// bars slide IN
 await sleep(250);
 screen.classList.add('tight');
 await sleep(1250);
 
-// title cards
 for (let i = 0; i < cards.length; i++){
 await showCard(cards[i]);
 }
 
-// bars slide OUT
 screen.classList.remove('tight');
 screen.classList.add('open');
 
-// show hero after opening starts
 await sleep(800);
 hero();
 app.classList.add('visible');
