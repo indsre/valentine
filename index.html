@@ -184,7 +184,133 @@ background: rgba(0,0,0,0.35);
 box-shadow: 0 18px 60px rgba(0,0,0,0.55);
 }
 .gif img{ width:100%; display:block; }
+
+/* ---------- PUZZLE (added) ---------- */
+.puzzleWrap{
+display:flex;
+flex-direction:column;
+align-items:center;
+gap:12px;
 }
+.puzzleGrid{
+width:min(420px, 82vw);
+aspect-ratio: 1 / 1;
+display:grid;
+grid-template-columns: repeat(3, 1fr);
+gap:8px;
+padding:10px;
+border-radius:18px;
+background: rgba(255,255,255,0.06);
+border:1px solid rgba(255,255,255,0.12);
+box-shadow: 0 18px 60px rgba(0,0,0,0.45);
+}
+.tile{
+border-radius:14px;
+border:1px solid rgba(255,255,255,0.14);
+background: rgba(0,0,0,0.35);
+background-repeat:no-repeat;
+background-size: 300% 300%;
+cursor:pointer;
+transition: transform .08s ease, filter .2s ease, outline .2s ease;
+}
+.tile:active{ transform: scale(0.99); }
+.tile.sel{
+outline: 3px solid rgba(255,143,163,0.55);
+filter: brightness(1.06);
+}
+.status{
+color: rgba(255,255,255,0.85);
+font-weight:850;
+letter-spacing:0.8px;
+text-transform:uppercase;
+font-size: 13px;
+}
+.hidden{ display:none; }
+
+/* ---------- COUNTDOWN (added) ---------- */
+.countWrap{
+display:flex;
+flex-direction:column;
+align-items:center;
+gap:14px;
+}
+.filmFrame{
+width:min(520px, 86vw);
+aspect-ratio: 16 / 9;
+border-radius:18px;
+position:relative;
+overflow:hidden;
+background:
+linear-gradient(90deg, rgba(0,0,0,0.12) 50%, rgba(255,255,255,0.03) 50%),
+linear-gradient(0deg, rgba(0,0,0,0.10) 50%, rgba(255,255,255,0.03) 50%);
+border:1px solid rgba(255,255,255,0.16);
+box-shadow: 0 18px 60px rgba(0,0,0,0.55);
+}
+.filmFrame::before{
+content:"";
+position:absolute; inset:0;
+background:
+radial-gradient(circle at 30% 35%, rgba(255,255,255,0.08), transparent 45%),
+radial-gradient(circle at 70% 60%, rgba(255,255,255,0.06), transparent 50%);
+mix-blend-mode: screen;
+opacity:0.35;
+pointer-events:none;
+}
+.crossV, .crossH{
+position:absolute;
+background: rgba(0,0,0,0.55);
+opacity:0.55;
+}
+.crossV{ width:2px; top:0; bottom:0; left:50%; transform:translateX(-1px); }
+.crossH{ height:2px; left:0; right:0; top:50%; transform:translateY(-1px); }
+
+.ring{
+position:absolute; inset:10%;
+border-radius:50%;
+border: 3px solid rgba(255,255,255,0.55);
+opacity:0.85;
+}
+.ring2{
+position:absolute; inset:13%;
+border-radius:50%;
+border: 2px solid rgba(255,255,255,0.35);
+opacity:0.85;
+}
+.sweep{
+position:absolute;
+left:50%; top:50%;
+width:2px;
+height:48%;
+background: rgba(0,0,0,0.75);
+transform-origin: bottom center;
+animation: sweep 1s linear infinite;
+}
+@keyframes sweep{
+from{ transform: translate(-50%, -100%) rotate(0deg); }
+to{ transform: translate(-50%, -100%) rotate(360deg); }
+}
+.countNum{
+position:absolute;
+inset:0;
+display:flex;
+align-items:center;
+justify-content:center;
+font-weight:950;
+font-size: clamp(64px, 14vw, 140px);
+color: rgba(0,0,0,0.78);
+text-shadow:
+0 2px 0 rgba(255,255,255,0.35),
+0 18px 60px rgba(0,0,0,0.55);
+letter-spacing:2px;
+}
+.countLabel{
+font-weight:950;
+letter-spacing:2px;
+text-transform:uppercase;
+opacity:0.9;
+}
+
+/* (your file had an extra } here originally; removed so CSS doesn't break) */
 </style>
 </head>
 
@@ -212,79 +338,204 @@ const cardText = document.getElementById('cardText');
 
 const ROMCOM_GIF_URL = "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExdTN6ejdsY2I5dnNtejJibDFjNGxjenIycnFoYzR3aGJ4MXhuZGJtciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/QeAqQ2k1shJwoBNggF/giphy.gif";
 
-// title cards (one by one)
-const cards = [
-"INDIE SREERAM PICTURES PRESENTS",
-"JAY NAGJEE",
-"IN AN INDIE SREERAM PRODUCTION",
-"OF AN INDIE SREERAM FILM",
-"A VALENTINE’S DAY"
-];
-
-function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
-
-// ~3 seconds per card total
-const FADE_IN_MS = 700;
-const HOLD_MS = 1600;
-const FADE_OUT_MS = 700;
-
-async function showCard(text){
-cardText.textContent = text;
-titlecard.classList.add('show');
-await sleep(FADE_IN_MS);
-await sleep(HOLD_MS);
-titlecard.classList.remove('show');
-await sleep(FADE_OUT_MS);
-}
-
-// --- FLOW: Hero -> Q1 -> Q2 -> Final -> Yes screen ---
-function hero(){
-app.innerHTML = `
-<div class="card">
-<div class="icons">🍿 💘</div>
-<h1 class="title">A Valentine’s Day</h1>
-<p class="subtitle">
-You have been invited to a private screening.<br/>
-</p>
-<div class="stage">
-<button class="primary" onclick="q1()">RSVP</button>
-</div>
-</div>
-`;
-}
-
-// ✅ Your Q1
+/* ✅ paste your image URL for the puzzle here */
+const PUZZLE_IMG_URL = "https://uploads8.wikiart.org/images/vincent-van-gogh/a-pair-of-lovers-arles-1888(1).jpg";
+/* =========================
+✅ PUZZLE
+========================= */
 function q1(){
 app.innerHTML = `
 <div class="card">
-<div class="icons">💭 💞</div>
-<h1 class="title">But first, I have a question</h1>
-<div class="stage">
-<div class="q">Do you think about me when we’re apart?</div>
+<div class="icons">🧩 🎬</div>
+<h1 class="title">Rebuild the scene</h1>
+<p class="subtitle">
+Swap tiles to restore a movie scene.<br/>
+You only get <b>4 swaps</b> 😈
+</p>
+
+<div class="puzzleWrap">
+<div class="status" id="swapStatus">Swaps left: 4</div>
+<div class="puzzleGrid" id="puzzleGrid" aria-label="Puzzle grid"></div>
+
 <div class="btns">
-<button class="primary" onclick="q2()">Yes</button>
-<button onclick="q2()">Yes</button>
+<button class="primary hidden" id="startShowtimeBtn" onclick="q2()">Start showtime</button>
+</div>
+
+<p class="subtitle" style="margin-top:4px; font-size:14px; opacity:0.85;">
+Tip: click one tile, then another to swap.
+</p>
 </div>
 </div>
-</div>
+`;
+
+const grid = document.getElementById('puzzleGrid');
+const swapStatus = document.getElementById('swapStatus');
+const startShowtimeBtn = document.getElementById('startShowtimeBtn');
+
+const MAX_SWAPS = 4;
+let swapsUsed = 0;
+let selected = null;
+
+// order[i] = which “piece index” is currently in tile position i
+let order = Array.from({length:9}, (_,i)=>i);
+
+function shuffle(arr){
+for(let i=arr.length-1;i>0;i--){
+const j = Math.floor(Math.random()*(i+1));
+[arr[i], arr[j]] = [arr[j], arr[i]];
+}
+}
+
+// make it mixed (but not too crazy)
+shuffle(order);
+for(let k=0;k<6;k++){
+const a = Math.floor(Math.random()*9);
+const b = Math.floor(Math.random()*9);
+[order[a], order[b]] = [order[b], order[a]];
+}
+
+function isSolved(){
+for(let i=0;i<9;i++){ if(order[i]!==i) return false; }
+return true;
+}
+
+function bgForPiece(pieceIndex){
+const x = pieceIndex % 3;
+const y = Math.floor(pieceIndex / 3);
+
+// fallback if user hasn't pasted image yet
+const hasImg = PUZZLE_IMG_URL && !PUZZLE_IMG_URL.includes("PASTE_");
+
+if(!hasImg){
+return `
+background-image:
+linear-gradient(135deg, rgba(255,77,109,0.25), rgba(255,143,163,0.10)),
+radial-gradient(circle at 30% 30%, rgba(255,255,255,0.20), transparent 55%);
+background-position: ${x*50}% ${y*50}%;
 `;
 }
 
-// ✅ Your Q2
+return `
+background-image: url('${PUZZLE_IMG_URL}');
+background-position: ${x*50}% ${y*50}%;
+`;
+}
+
+function renderTiles(){
+grid.innerHTML = "";
+for(let pos=0; pos<9; pos++){
+const piece = order[pos];
+const tile = document.createElement('div');
+tile.className = "tile" + (selected===pos ? " sel" : "");
+tile.style.cssText = bgForPiece(piece);
+
+tile.addEventListener('click', () => {
+if(startShowtimeBtn && !startShowtimeBtn.classList.contains('hidden')) return;
+
+// first click selects
+if(selected === null){
+selected = pos;
+renderTiles();
+return;
+}
+
+// clicking same tile cancels
+if(selected === pos){
+selected = null;
+renderTiles();
+return;
+}
+
+// if already used swaps up, ignore
+if(swapsUsed >= MAX_SWAPS){
+return;
+}
+
+// swap two selected tiles
+const a = selected;
+const b = pos;
+
+[order[a], order[b]] = [order[b], order[a]];
+swapsUsed++;
+
+const left = MAX_SWAPS - swapsUsed;
+swapStatus.textContent = `Swaps left: ${left}`;
+
+selected = null;
+renderTiles();
+
+if(isSolved()){
+swapStatus.textContent = "Wooo! Scene restored ✅";
+startShowtimeBtn.classList.remove('hidden');
+return;
+}
+
+if(swapsUsed >= MAX_SWAPS){
+swapStatus.textContent = "Out of swaps 😭 reshuffling...";
+setTimeout(() => {
+shuffle(order);
+swapsUsed = 0;
+swapStatus.textContent = `Swaps left: ${MAX_SWAPS}`;
+selected = null;
+renderTiles();
+}, 900);
+}
+});
+
+grid.appendChild(tile);
+}
+}
+
+// init
+swapsUsed = 0;
+swapStatus.textContent = `Swaps left: ${MAX_SWAPS}`;
+renderTiles();
+}
+
+/* =========================
+✅ COUNTDOWN
+========================= */
 function q2(){
 app.innerHTML = `
 <div class="card">
-<div class="icons">📱 ✨</div>
-<h1 class="title">Okay, one more question</h1>
-<div class="stage">
-<div class="q">When my name pops up on your phone…</div>
-<div class="btns">
-<button class="primary" onclick="finalQ()">You smile</button>
-<button onclick="finalQ()">You do a little champu dance</button>
+<div class="icons">🎞️ ⏳</div>
+<h1 class="title">Showtime</h1>
+<p class="subtitle"><span class="countLabel">Showtime begins in</span></p>
+
+<div class="countWrap">
+<div class="filmFrame" aria-label="Screening countdown">
+<div class="crossV"></div>
+<div class="crossH"></div>
+<div class="ring"></div>
+<div class="ring2"></div>
+<div class="sweep"></div>
+<div class="countNum" id="countNum">5</div>
 </div>
+
+<p class="subtitle" style="margin-top:4px; font-size:14px; opacity:0.85;">
+Get ready 🍿
+</p>
 </div>
 </div>
 `;
+
+const el = document.getElementById('countNum');
+let n = 5;
+
+const tick = () => {
+el.textContent = n;
+n--;
+if(n === 0){
+setTimeout(() => {
+finalQ();
+}, 650);
+return;
+}
+setTimeout(tick, 1000);
+};
+
+tick();
+
 }
 
 // ✅ Final valentine question (with dodging "no")
@@ -292,9 +543,9 @@ function finalQ(){
 app.innerHTML = `
 <div class="card">
 <div class="icons">🎬 💖</div>
-<h1 class="title">But the most important question of all</h1>
+<h1 class="title">Final Cut</h1>
 <div class="stage">
-<div class="q">Jay baba, will you be my Valentine?</div>
+<div class="q">Jay, will you be my Valentine?</div>
 <div class="btns" id="finalBtns">
 <button class="primary" onclick="yes()">Yes, I would love to</button>
 <button id="noBtn">No</button>
