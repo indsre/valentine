@@ -387,140 +387,123 @@ function q1(){
 app.innerHTML = `
 <div class="card">
 <div class="icons">🧩 🎬</div>
-<h1 class="title">Rebuild the scene</h1>
+<h1 class="title">Rebuild the Scene</h1>
 <p class="subtitle">
-Swap tiles to restore a scene.<br/>
-You only get <b>4 swaps</b> 😈
+Slide the tiles to restore the movie scene.<br/>
+You only need about <b>5 moves</b> 😉
 </p>
 
 <div class="puzzleWrap">
-<div class="status" id="swapStatus">Swaps left: 4</div>
-<div class="puzzleGrid" id="puzzleGrid" aria-label="Puzzle grid"></div>
+<div class="status" id="moveStatus">Moves left: 8</div>
+<div class="puzzleGrid" id="puzzleGrid"></div>
 
 <div class="btns">
-<button class="primary hidden" id="startShowtimeBtn" onclick="q2()">Start showtime</button>
+<button class="primary hidden" id="startShowtimeBtn" onclick="q2()">Start Showtime</button>
 </div>
 
 <p class="subtitle" style="margin-top:4px; font-size:14px; opacity:0.85;">
-Tip: click one tile, then another to swap.
+Tap a tile next to the empty space to move it.
 </p>
 </div>
 </div>
 `;
 
 const grid = document.getElementById('puzzleGrid');
-const swapStatus = document.getElementById('swapStatus');
+const moveStatus = document.getElementById('moveStatus');
 const startShowtimeBtn = document.getElementById('startShowtimeBtn');
 
-const MAX_SWAPS = 4;
-let swapsUsed = 0;
-let selected = null;
+const EMPTY = 8; // bottom-right is empty tile
+const MAX_MOVES = 8;
+let movesUsed = 0;
 
-// order[i] = which “piece index” is currently in tile position i
-let order = Array.from({length:9}, (_,i)=>i);
+// solved order
+let order = [0,1,2,3,4,5,6,7,8];
 
-function shuffle(arr){
-for(let i=arr.length-1;i>0;i--){
-const j = Math.floor(Math.random()*(i+1));
-[arr[i], arr[j]] = [arr[j], arr[i]];
-}
-}
+/* ---- LIGHT SCRAMBLE (5 legal moves only) ---- */
+const SCRAMBLE_MOVES = 5;
+let lastEmpty = null;
 
-// make it mixed (but not too crazy)
-shuffle(order);
-for(let k=0;k<6;k++){
-const a = Math.floor(Math.random()*9);
-const b = Math.floor(Math.random()*9);
-[order[a], order[b]] = [order[b], order[a]];
+for(let i=0;i<SCRAMBLE_MOVES;i++){
+const empty = order.indexOf(EMPTY);
+
+const candidates = [];
+if(empty % 3 !== 0) candidates.push(empty-1);
+if(empty % 3 !== 2) candidates.push(empty+1);
+if(empty-3 >= 0) candidates.push(empty-3);
+if(empty+3 < 9) candidates.push(empty+3);
+
+const filtered = candidates.filter(p => p !== lastEmpty);
+const pool = filtered.length ? filtered : candidates;
+const moveFrom = pool[Math.floor(Math.random() * pool.length)];
+
+lastEmpty = empty;
+[order[moveFrom], order[empty]] = [order[empty], order[moveFrom]];
 }
+/* --------------------------------------------- */
 
 function isSolved(){
-for(let i=0;i<9;i++){ if(order[i]!==i) return false; }
+for(let i=0;i<9;i++){
+if(order[i] !== i) return false;
+}
 return true;
 }
 
 function bgForPiece(pieceIndex){
+if(pieceIndex === EMPTY) return "background:none;";
+
 const x = pieceIndex % 3;
 const y = Math.floor(pieceIndex / 3);
-
-const hasImg = PUZZLE_IMG_URL && !PUZZLE_IMG_URL.includes("PASTE_");
-
-if(!hasImg){
-return `
-background-image:
-linear-gradient(135deg, rgba(255,77,109,0.25), rgba(255,143,163,0.10)),
-radial-gradient(circle at 30% 30%, rgba(255,255,255,0.20), transparent 55%);
-background-position: ${x*50}% ${y*50}%;
-`;
-}
 
 return `
 background-image: url('${PUZZLE_IMG_URL}');
 background-position: ${x*50}% ${y*50}%;
+background-size: 300% 300%;
 `;
 }
 
-function renderTiles(){
+function render(){
 grid.innerHTML = "";
-for(let pos=0; pos<9; pos++){
-const piece = order[pos];
-const tile = document.createElement('div');
-tile.className = "tile" + (selected===pos ? " sel" : "");
+
+order.forEach((piece,pos)=>{
+const tile = document.createElement("div");
+tile.className = "tile";
 tile.style.cssText = bgForPiece(piece);
 
-tile.addEventListener('click', () => {
-if(startShowtimeBtn && !startShowtimeBtn.classList.contains('hidden')) return;
+if(piece === EMPTY){
+tile.style.background = "rgba(0,0,0,0.4)";
+tile.style.border = "1px dashed rgba(255,255,255,0.25)";
+tile.style.cursor = "default";
+} else {
+tile.addEventListener("click", ()=>{
+if(movesUsed >= MAX_MOVES) return;
 
-if(selected === null){
-selected = pos;
-renderTiles();
-return;
-}
-if(selected === pos){
-selected = null;
-renderTiles();
-return;
-}
-if(swapsUsed >= MAX_SWAPS){
-return;
-}
+const empty = order.indexOf(EMPTY);
+const valid =
+(pos === empty-1 && empty%3!==0) ||
+(pos === empty+1 && empty%3!==2) ||
+(pos === empty-3) ||
+(pos === empty+3);
 
-const a = selected;
-const b = pos;
+if(!valid) return;
 
-[order[a], order[b]] = [order[b], order[a]];
-swapsUsed++;
+[order[pos], order[empty]] = [order[empty], order[pos]];
+movesUsed++;
 
-const left = MAX_SWAPS - swapsUsed;
-swapStatus.textContent = `Swaps left: ${left}`;
-
-selected = null;
-renderTiles();
+moveStatus.textContent = "Moves left: " + (MAX_MOVES - movesUsed);
+render();
 
 if(isSolved()){
-swapStatus.textContent = "Wooo! Scene restored ✅";
-startShowtimeBtn.classList.remove('hidden');
-return;
-}
-
-if(swapsUsed >= MAX_SWAPS){
-swapStatus.textContent = "Out of swaps 😭 reshuffling...";
-setTimeout(() => {
-shuffle(order);
-swapsUsed = 0;
-swapStatus.textContent = `Swaps left: ${MAX_SWAPS}`;
-selected = null;
-renderTiles();
-}, 900);
+moveStatus.textContent = "Scene restored 🎬✨";
+startShowtimeBtn.classList.remove("hidden");
 }
 });
+}
 
 grid.appendChild(tile);
+});
 }
-}
-swapsUsed = 0;
-swapStatus.textContent = `Swaps left: ${MAX_SWAPS}`;
-renderTiles();
+
+render();
 }
 
 /* =========================
